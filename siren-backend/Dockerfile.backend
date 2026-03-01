@@ -1,0 +1,23 @@
+# Django Backend Dockerfile
+FROM python:3.11-bookworm
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    libpq-dev \
+    gcc \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+# Copy requirements and install
+# Note: We'll need a requirements.txt for the Django backend specifically
+# For now, I'll use a generic set based on what I saw in package.json and manage.py
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy project files
+COPY . .
+
+# Expose port and start
+EXPOSE 8000
+CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
