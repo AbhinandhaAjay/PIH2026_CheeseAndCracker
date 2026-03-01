@@ -108,7 +108,7 @@ const IncidentDetailModal = ({ incident, onClose }) => {
 
   const imageUrl = incident.image?.startsWith("http")
     ? incident.image
-    : `http://localhost:8000${incident.image}` || PLACEHOLDER_IMAGE;
+    : `${API_URL}${incident.image}` || PLACEHOLDER_IMAGE;
 
 
 
@@ -122,8 +122,8 @@ const IncidentDetailModal = ({ incident, onClose }) => {
       severity === "High"
         ? "bg-red-600"
         : severity === "Medium"
-        ? "bg-yellow-500"
-        : "bg-green-500";
+          ? "bg-yellow-500"
+          : "bg-green-500";
     return (
       <span
         className={`inline-block px-3 py-1 text-xs text-white rounded-full ${color}`}
@@ -137,37 +137,37 @@ const IncidentDetailModal = ({ incident, onClose }) => {
     <>
       {/* Main Modal */}
       <div className="fixed inset-0 z-50 overflow-y-auto bg-black bg-opacity-40">
-  <div className="flex items-center justify-center min-h-screen px-4 py-8">
-    <div className="bg-white w-full max-w-lg p-6 rounded-lg shadow-lg relative">
-          {/* Close Button */}
-          <button
-            onClick={onClose}
-            className="absolute top-2 right-2 text-gray-500 hover:text-gray-700"
-          >
-            <X className="h-5 w-5" />
-          </button>
+        <div className="flex items-center justify-center min-h-screen px-4 py-8">
+          <div className="bg-white w-full max-w-lg p-6 rounded-lg shadow-lg relative">
+            {/* Close Button */}
+            <button
+              onClick={onClose}
+              className="absolute top-2 right-2 text-gray-500 hover:text-gray-700"
+            >
+              <X className="h-5 w-5" />
+            </button>
 
-          {/* Header */}
-          <h2 className="text-xl font-bold text-gray-800 mb-4">
-            Accident Report {incident.id}
-          </h2>
+            {/* Header */}
+            <h2 className="text-xl font-bold text-gray-800 mb-4">
+              Accident Report {incident.id}
+            </h2>
 
-          {/* Address */}
-          <p className="text-sm text-gray-600 mb-2 flex items-center">
-            <MapPin className="h-4 w-4 mr-1" />
-            {incident.address}
-          </p>
+            {/* Address */}
+            <p className="text-sm text-gray-600 mb-2 flex items-center">
+              <MapPin className="h-4 w-4 mr-1" />
+              {incident.address}
+            </p>
 
-          {/* Timestamp */}
-          <p className="text-sm text-gray-600 mb-2 flex items-center">
-            <Clock className="h-4 w-4 mr-1" />
-            {formatDate(incident.timestamp)}
-          </p>
+            {/* Timestamp */}
+            <p className="text-sm text-gray-600 mb-2 flex items-center">
+              <Clock className="h-4 w-4 mr-1" />
+              {formatDate(incident.timestamp)}
+            </p>
 
-          {/* Severity */}
-          <SeverityBadge severity={incident.severity} />
-          {/* Accident Image */}
-{/* {incident.image_url ? (
+            {/* Severity */}
+            <SeverityBadge severity={incident.severity} />
+            {/* Accident Image */}
+            {/* {incident.image_url ? (
   <div className="mt-4">
     <img
       src={incident.image_url}
@@ -189,146 +189,146 @@ const IncidentDetailModal = ({ incident, onClose }) => {
 )} */}
 
 
-          {/* Image with Zoom Icon */}
-          <div
-            className="relative mt-4 cursor-zoom-in"
-            onClick={() => setZoomed(true)}
-          >
-            <img
-              src={imageUrl}
-              alt="Accident scene"
-              className="w-full h-auto max-h-60 object-cover rounded shadow"
-            />
-            {/* <ZoomIn className="absolute bottom-2 right-2 text-white bg-black bg-opacity-50 p-1 rounded" /> */}
-          </div>
+            {/* Image with Zoom Icon */}
+            <div
+              className="relative mt-4 cursor-zoom-in"
+              onClick={() => setZoomed(true)}
+            >
+              <img
+                src={imageUrl}
+                alt="Accident scene"
+                className="w-full h-auto max-h-60 object-cover rounded shadow"
+              />
+              {/* <ZoomIn className="absolute bottom-2 right-2 text-white bg-black bg-opacity-50 p-1 rounded" /> */}
+            </div>
 
-          {/* Description */}
-          {/* {incident.description && (
+            {/* Description */}
+            {/* {incident.description && (
             <p className="mt-4 text-sm text-gray-700">
               {incident.description}
             </p>
           )} */}
-         {incident.description && (() => {
-  const parseDescription = (desc) => {
-    const vehicles = [];
-    let accidentDesc = '';
-    let severityInfo = '';
-    
-    const lines = desc.split('\n');
-    let currentSection = '';
-    
-    lines.forEach(line => {
-      const trimmed = line.trim();
-      if (trimmed.startsWith('Vehicles Involved:')) {
-        currentSection = 'vehicles';
-      } else if (trimmed.startsWith('Accident Description:')) {
-        currentSection = 'accident';
-      } else if (trimmed.startsWith('Severity:')) {
-        currentSection = 'severity';
-      } else if (currentSection === 'vehicles' && trimmed.startsWith('*')) {
-        vehicles.push(trimmed.replace('*', '').trim());
-      } else if (currentSection === 'accident' && trimmed && !trimmed.startsWith('Severity:')) {
-        accidentDesc += trimmed + ' ';
-      } else if (currentSection === 'severity' && trimmed) {
-        severityInfo += trimmed + ' ';
-      }
-    });
-    
-    return {
-      vehicles,
-      accident: accidentDesc.trim(),
-      severity: severityInfo.trim()
-    };
-  };
+            {incident.description && (() => {
+              const parseDescription = (desc) => {
+                const vehicles = [];
+                let accidentDesc = '';
+                let severityInfo = '';
 
-  const data = parseDescription(incident.description);
+                const lines = desc.split('\n');
+                let currentSection = '';
 
-  return (
-    <div className="mt-6 bg-white border border-gray-200 rounded-lg overflow-hidden">
-      <div className="bg-gray-50 px-4 py-3 border-b border-gray-200">
-        <h4 className="font-semibold text-gray-900 flex items-center">
-          <AlertCircle className="w-4 h-4 mr-2 text-gray-600" />
-          Incident Analysis
-        </h4>
-      </div>
-      
-      <div className="divide-y divide-gray-200">
-        {/* Vehicles Row */}
-        {data.vehicles.length > 0 && (
-          <div className="px-4 py-3">
-            <div className="flex">
-              <span className="text-sm font-medium text-gray-700 w-32 flex-shrink-0">
-                Vehicles:
-              </span>
-              <div className="text-sm text-gray-600">
-                {data.vehicles.map((vehicle, index) => (
-                  <div key={index} className="flex items-center">
-                    <span className="w-2 h-2 bg-blue-500 rounded-full mr-2"></span>
-                    {vehicle}
+                lines.forEach(line => {
+                  const trimmed = line.trim();
+                  if (trimmed.startsWith('Vehicles Involved:')) {
+                    currentSection = 'vehicles';
+                  } else if (trimmed.startsWith('Accident Description:')) {
+                    currentSection = 'accident';
+                  } else if (trimmed.startsWith('Severity:')) {
+                    currentSection = 'severity';
+                  } else if (currentSection === 'vehicles' && trimmed.startsWith('*')) {
+                    vehicles.push(trimmed.replace('*', '').trim());
+                  } else if (currentSection === 'accident' && trimmed && !trimmed.startsWith('Severity:')) {
+                    accidentDesc += trimmed + ' ';
+                  } else if (currentSection === 'severity' && trimmed) {
+                    severityInfo += trimmed + ' ';
+                  }
+                });
+
+                return {
+                  vehicles,
+                  accident: accidentDesc.trim(),
+                  severity: severityInfo.trim()
+                };
+              };
+
+              const data = parseDescription(incident.description);
+
+              return (
+                <div className="mt-6 bg-white border border-gray-200 rounded-lg overflow-hidden">
+                  <div className="bg-gray-50 px-4 py-3 border-b border-gray-200">
+                    <h4 className="font-semibold text-gray-900 flex items-center">
+                      <AlertCircle className="w-4 h-4 mr-2 text-gray-600" />
+                      Incident Analysis
+                    </h4>
                   </div>
-                ))}
+
+                  <div className="divide-y divide-gray-200">
+                    {/* Vehicles Row */}
+                    {data.vehicles.length > 0 && (
+                      <div className="px-4 py-3">
+                        <div className="flex">
+                          <span className="text-sm font-medium text-gray-700 w-32 flex-shrink-0">
+                            Vehicles:
+                          </span>
+                          <div className="text-sm text-gray-600">
+                            {data.vehicles.map((vehicle, index) => (
+                              <div key={index} className="flex items-center">
+                                <span className="w-2 h-2 bg-blue-500 rounded-full mr-2"></span>
+                                {vehicle}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Accident Description Row */}
+                    {data.accident && (
+                      <div className="px-4 py-3">
+                        <div className="flex">
+                          <span className="text-sm font-medium text-gray-700 w-32 flex-shrink-0">
+                            Description:
+                          </span>
+                          <p className="text-sm text-gray-600 flex-1">
+                            {data.accident}
+                          </p>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Severity Row */}
+                    {data.severity && (
+                      <div className="px-4 py-3">
+                        <div className="flex">
+                          <span className="text-sm font-medium text-gray-700 w-32 flex-shrink-0">
+                            Severity:
+                          </span>
+                          <p className="text-sm text-gray-600 flex-1">
+                            {data.severity}
+                          </p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              );
+            })()}
+
+            {/* Status */}
+            <p className="mt-4 text-sm text-gray-700">
+              Status: <strong>{incident.status}</strong>
+            </p>
+            <h6 className="text-xl text-gray-800 mb-4"><br></br>Accident Location📌</h6>
+
+            {/* Map */}
+            {coords && (
+              <div className="mt-4 h-64 rounded overflow-hidden">
+                <MapContainer
+                  center={[coords.lat, coords.lng]}
+                  zoom={15}
+                  scrollWheelZoom={false}
+                  className="h-full w-full"
+                >
+                  <TileLayer
+                    attribution='&copy; <a href="https://osm.org">OpenStreetMap</a> contributors'
+                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                  />
+                  <Marker position={[coords.lat, coords.lng]}>
+                    <Popup>{incident.address}</Popup>
+                  </Marker>
+                </MapContainer>
               </div>
-            </div>
-          </div>
-        )}
-        
-        {/* Accident Description Row */}
-        {data.accident && (
-          <div className="px-4 py-3">
-            <div className="flex">
-              <span className="text-sm font-medium text-gray-700 w-32 flex-shrink-0">
-                Description:
-              </span>
-              <p className="text-sm text-gray-600 flex-1">
-                {data.accident}
-              </p>
-            </div>
-          </div>
-        )}
-        
-        {/* Severity Row */}
-        {data.severity && (
-          <div className="px-4 py-3">
-            <div className="flex">
-              <span className="text-sm font-medium text-gray-700 w-32 flex-shrink-0">
-                Severity:
-              </span>
-              <p className="text-sm text-gray-600 flex-1">
-                {data.severity}
-              </p>
-            </div>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-})()}
-
-          {/* Status */}
-          <p className="mt-4 text-sm text-gray-700">
-            Status: <strong>{incident.status}</strong>
-          </p>
-          <h6 className="text-xl text-gray-800 mb-4"><br></br>Accident Location📌</h6>
-
-          {/* Map */}
-          {coords && (
-            <div className="mt-4 h-64 rounded overflow-hidden">
-              <MapContainer
-                center={[coords.lat, coords.lng]}
-                zoom={15}
-                scrollWheelZoom={false}
-                className="h-full w-full"
-              >
-                <TileLayer
-                  attribution='&copy; <a href="https://osm.org">OpenStreetMap</a> contributors'
-                  url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                />
-                <Marker position={[coords.lat, coords.lng]}>
-                  <Popup>{incident.address}</Popup>
-                </Marker>
-              </MapContainer>
-            </div>
-          )}
+            )}
           </div>
         </div>
       </div>
@@ -346,7 +346,7 @@ const IncidentDetailModal = ({ incident, onClose }) => {
           />
         </div>
       )} */}
-      
+
     </>
   );
 };
@@ -366,7 +366,7 @@ const IncidentCard = ({ incident, onAccept, onReject, onViewDetails }) => {
           </h3>
           <SeverityBadge severity={incident.severity} />
         </div>
-        
+
         <div className="mt-2 flex items-center text-sm text-gray-500">
           <MapPin className="flex-shrink-0 mr-1.5 h-4 w-4 text-gray-400" />
           <p>{incident.address}</p>
@@ -470,75 +470,75 @@ const HospitalDashboard = () => {
     fetchAccidents();
   }, []);
 
-const handleAcceptIncident = async (incidentId) => {
-  try {
-    const token = localStorage.getItem("token");
+  const handleAcceptIncident = async (incidentId) => {
+    try {
+      const token = localStorage.getItem("token");
 
-    const response = await fetch(`http://localhost:8000/api/accidents/${incidentId}/accept/`, {
-      method: 'PUT',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json',
-      },
-    });
+      const response = await fetch(`http://localhost:8000/api/accidents/${incidentId}/accept/`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
 
-    if (!response.ok) {
-      const errorData = await response.json();
-      console.error("Error accepting accident:", errorData);
-      return;
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error("Error accepting accident:", errorData);
+        return;
+      }
+
+      // Update UI if accepted
+      const updatedIncidents = incidents.map((incident) =>
+        incident.id === incidentId
+          ? { ...incident, hospital_status: "accepted" }
+          : incident
+      );
+      setIncidents(updatedIncidents);
+
+      const incident = incidents.find((i) => i.id === incidentId);
+      if (incident) {
+        const newNotification = {
+          id: Date.now(),
+          title: "Incident Accepted",
+          message: `You've accepted incident at ${incident.address}`,
+          timestamp: new Date().toISOString(),
+          isRead: false,
+          link: `/hospital/incident/${incidentId}`,
+        };
+        setNotifications((prev) => [newNotification, ...prev]);
+        setHasUnreadNotifications(true);
+      }
+
+    } catch (error) {
+      console.error("Error in accept request:", error);
     }
-
-    // Update UI if accepted
-    const updatedIncidents = incidents.map((incident) =>
-      incident.id === incidentId
-        ? { ...incident, hospital_status: "accepted" }
-        : incident
-    );
-    setIncidents(updatedIncidents);
-
-    const incident = incidents.find((i) => i.id === incidentId);
-    if (incident) {
-      const newNotification = {
-        id: Date.now(),
-        title: "Incident Accepted",
-        message: `You've accepted incident at ${incident.address}`,
-        timestamp: new Date().toISOString(),
-        isRead: false,
-        link: `/hospital/incident/${incidentId}`,
-      };
-      setNotifications((prev) => [newNotification, ...prev]);
-      setHasUnreadNotifications(true);
-    }
-
-  } catch (error) {
-    console.error("Error in accept request:", error);
-  }
-};
+  };
 
 
   const handleReject = async (id) => {
-  try {
-    const token = localStorage.getItem("token");
-    const res = await fetch(`http://localhost:8000/api/accidents/${id}/reject/`, {
-      method: "PUT",
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
-    });
+    try {
+      const token = localStorage.getItem("token");
+      const res = await fetch(`http://localhost:8000/api/accidents/${id}/reject/`, {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
 
-    if (!res.ok) {
-      console.error("Failed to reject");
-      return;
+      if (!res.ok) {
+        console.error("Failed to reject");
+        return;
+      }
+
+      setIncidents((prev) =>
+        prev.map((i) => (i.id === id ? { ...i, hospital_status: "rejected" } : i))
+      );
+    } catch (err) {
+      console.error("Error rejecting:", err);
     }
-
-    setIncidents((prev) =>
-      prev.map((i) => (i.id === id ? { ...i, hospital_status: "rejected" } : i))
-    );
-  } catch (err) {
-    console.error("Error rejecting:", err);
-  }
-};
+  };
 
 
   const handleMarkAllNotificationsRead = () => {
@@ -689,21 +689,21 @@ const handleAcceptIncident = async (incidentId) => {
           )}
         </section>
         <section className="mt-12">
-  <h2 className="text-xl font-semibold">Rejected Incidents</h2>
-  {rejected.length > 0 ? (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
-      {rejected.map((incident) => (
-        <div key={incident.id} className="bg-white p-4 rounded shadow">
-          <h3 className="font-semibold text-gray-800">#{incident.id}</h3>
-          <p>{incident.address}</p>
-          <p>{formatDate(incident.timestamp)}</p>
-        </div>
-      ))}
-    </div>
-  ) : (
-    <p className="text-gray-500 mt-4">No rejected incidents</p>
-  )}
-</section>
+          <h2 className="text-xl font-semibold">Rejected Incidents</h2>
+          {rejected.length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
+              {rejected.map((incident) => (
+                <div key={incident.id} className="bg-white p-4 rounded shadow">
+                  <h3 className="font-semibold text-gray-800">#{incident.id}</h3>
+                  <p>{incident.address}</p>
+                  <p>{formatDate(incident.timestamp)}</p>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-gray-500 mt-4">No rejected incidents</p>
+          )}
+        </section>
 
 
         {selectedIncident && (
