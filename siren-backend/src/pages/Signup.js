@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { AlertTriangle } from 'lucide-react';
+import { API_URL } from '../config';
 
 const Signup = () => {
   const [formData, setFormData] = useState({
@@ -11,95 +12,95 @@ const Signup = () => {
     confirmPassword: '',
     role: '',
     organizationName: '',
-    address:''
+    address: ''
   });
-  
+
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
-  
+
   const { signup } = useAuth();
   const navigate = useNavigate();
-  
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
-    
+
     // Clear specific field error when user starts typing again
     if (errors[name]) {
       setErrors(prev => ({ ...prev, [name]: '' }));
     }
   };
-  
+
   const validateForm = () => {
     console.log(formData);
     const newErrors = {};
-    
+
     if (!formData.email.trim()) newErrors.email = 'Email is required';
     else if (!/\S+@\S+\.\S+/.test(formData.email)) newErrors.email = 'Email is invalid';
-    
+
     if (!formData.password) newErrors.password = 'Password is required';
     else if (formData.password.length < 6) newErrors.password = 'Password must be at least 6 characters';
-    
+
     if (formData.password !== formData.confirmPassword) {
       newErrors.confirmPassword = 'Passwords do not match';
     }
-    
+
     if (!formData.role) newErrors.role = 'Please select a role';
-    
+
     if (!formData.organizationName.trim()) {
       newErrors.organizationName = 'Organization name is required';
     }
-    
+
     if (!formData.address.trim()) newErrors.address = 'Address is required';
-    
-    
+
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
-  
-const handleSubmit = async (e) => {
-  e.preventDefault();
 
-  if (!validateForm()) return;
+  const handleSubmit = async (e) => {
+    e.preventDefault();
 
-  setIsLoading(true);
-  setErrorMessage('');
+    if (!validateForm()) return;
 
-  try {
-    const userData = {
-      email: formData.email,
-      password: formData.password,
-      role: formData.role,
-      organization_name: formData.organizationName,
-      address: formData.address,
-    };
+    setIsLoading(true);
+    setErrorMessage('');
 
-    const response = await fetch('http://localhost:8000/api/signup/', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(userData),
-    });
+    try {
+      const userData = {
+        email: formData.email,
+        password: formData.password,
+        role: formData.role,
+        organization_name: formData.organizationName,
+        address: formData.address,
+      };
 
-    if (response.ok) {
-      alert("Signed Up successfullly!");
-      navigate('/login', {
-        state: { message: 'Registration successful. Please log in.' },
+      const response = await fetch(`${API_URL}/api/signup/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(userData),
       });
-    } else {
-      const data = await response.json();
-      setErrorMessage(data.error || 'Registration failed. Please check your inputs.');
-    }
-  } catch (error) {
-    setErrorMessage('An error occurred during registration. Please try again.');
-  } finally {
-    setIsLoading(false);
-  }
-};
 
-  
+      if (response.ok) {
+        alert("Signed Up successfullly!");
+        navigate('/login', {
+          state: { message: 'Registration successful. Please log in.' },
+        });
+      } else {
+        const data = await response.json();
+        setErrorMessage(data.error || 'Registration failed. Please check your inputs.');
+      }
+    } catch (error) {
+      setErrorMessage('An error occurred during registration. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+
   return (
     <div className="min-h-screen py-12 sm:px-6 lg:px-8 bg-gray-50">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
@@ -125,7 +126,7 @@ const handleSubmit = async (e) => {
               {errorMessage}
             </div>
           )}
-          
+
           <form className="space-y-6" onSubmit={handleSubmit}>
 
             <div>

@@ -9,8 +9,9 @@ services:
     volumes:
       - ./siren-backend:/app
     environment:
-      - DEBUG=True
-      - GOOGLE_API_KEY_FILE=/app/.env
+      - DJANGO_DEBUG=${DJANGO_DEBUG:-True}
+      - DJANGO_SECRET_KEY=${DJANGO_SECRET_KEY:-django-insecure-mcn4ub=rp31s6qtpr+o!*z6yq=z%-vbxt)74xwmm0tmjb=%tdg}
+      - DJANGO_ALLOWED_HOSTS=${DJANGO_ALLOWED_HOSTS:-*}
     env_file:
       - .env
 
@@ -23,6 +24,8 @@ services:
     volumes:
       - ./siren-backend:/app
       - /app/node_modules
+    environment:
+      - REACT_APP_API_URL=${DJANGO_API_URL:-http://localhost:8000}
     depends_on:
       - django-backend
 
@@ -52,6 +55,6 @@ services:
       - ./flask_engine/frontend:/app
       - /app/node_modules
     environment:
-      - REACT_APP_FLASK_API_URL=http://localhost:5001
+      - REACT_APP_FLASK_API_URL=${FLASK_API_URL:-http://localhost:5001}
     depends_on:
       - flask-backend
