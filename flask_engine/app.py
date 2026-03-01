@@ -54,5 +54,6 @@ def serve_static(path):
     return send_from_directory('static', path)
 
 if __name__ == '__main__':
-    print("DEBUG: Flask server is starting on 0.0.0.0:5000...", flush=True)
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    port = int(os.environ.get("PORT", 5000))
+    print(f"DEBUG: Flask server is starting on 0.0.0.0:{port}...", flush=True)
+    app.run(host='0.0.0.0', port=port, debug=True)
