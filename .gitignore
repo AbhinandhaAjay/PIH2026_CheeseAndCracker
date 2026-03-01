@@ -7,7 +7,9 @@ __pycache__/
 *.dll
 *.lib
 
-# Virtual Environments
+# Databases
+*.sqlite3
+db.sqlite3
 .venv/
 venv/
 ENV/
@@ -54,3 +56,17 @@ Desktop.ini
 # Logs
 *.log
 logs/
+flask_error_logs.txt
+flask_debug_full.txt
+key_test_log.txt
+key_test_log_v2.txt
+backend_logs.txt
+
+# Diagnostic/Debug Scripts
+test_key*.py
+test_django_*.py
+flask_engine/test_django_connection.py
+
+# Temporary and Media
+temp_git_backup/
+siren-backend/media/

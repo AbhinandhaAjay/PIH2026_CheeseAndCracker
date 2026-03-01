@@ -50,36 +50,8 @@ TARGET = np.array([
     [0, TARGET_HEIGHT - 1],
 ])
 
-def select_polygon_points(image, num_points=4, x_margin=400, y_margin=300):
-    fig, ax = plt.subplots(figsize=(10, 6))
-    height, width = image.shape[:2]
-
-    ax.imshow(image, extent=[0, width, height, 0])
-    ax.set_xlim(-x_margin, width + x_margin)
-    ax.axhline(0, color='black', linewidth=1)
-    ax.axvline(0, color='black', linewidth=1)
-    ax.grid(True)
-    ax.set_title(f"Click {num_points} points for the SOURCE polygon")
-
-    coords = []
-
-    def onclick(event):
-        if event.xdata is not None and event.ydata is not None:
-            x, y = int(event.xdata), int(event.ydata)
-            coords.append((x, y))
-            ax.plot(x, y, 'ro')
-            ax.text(x + 5, y + 5, f"({x}, {y})", color='red')
-            fig.canvas.draw()
-
-            if len(coords) == num_points:
-                plt.close()
-
-    fig.canvas.mpl_connect('button_press_event', onclick)
-    plt.show()
-
-    if len(coords) != num_points:
-        raise ValueError("Insufficient points selected.")
-    return np.array(coords, dtype=np.int32)
+# Non-interactive View Transformer setup
+# This will be called from main.py or initialized with defaults if run directly
 
 class ViewTransformer:
     def __init__(self, source: np.ndarray, target: np.ndarray) -> None:
@@ -98,10 +70,12 @@ class ViewTransformer:
 frame_generator = sv.get_video_frames_generator(source_path=SOURCE_VIDEO_PATH)
 frame_iterator = iter(frame_generator)
 frame = next(frame_iterator)
-SOURCE = select_polygon_points(frame.copy(), num_points=4)
-annotated_frame = frame.copy()
-annotated_frame = sv.draw_polygon(scene=annotated_frame, polygon=SOURCE, color=sv.Color.RED, thickness=4)
-sv.plot_image(annotated_frame)
+# Default SOURCE for head-less execution
+height, width = frame.shape[:2]
+SOURCE = np.array([[0, 0], [width, 0], [width, height], [0, height]])
+# annotated_frame = frame.copy()
+# annotated_frame = sv.draw_polygon(scene=annotated_frame, polygon=SOURCE, color=sv.Color.RED, thickness=4)
+# sv.plot_image(annotated_frame)
 
 view_transformer = ViewTransformer(source=SOURCE, target=TARGET)
 model = YOLO(MODEL_NAME)
@@ -188,9 +162,9 @@ with sv.VideoSink(TARGET_VIDEO_PATH, video_info) as sink:
             annotated_frame = bounding_box_annotator.annotate(annotated_frame, detections)
             annotated_frame = label_annotator.annotate(annotated_frame, detections, labels)
 
-            cv2.imshow("Annotated Frame", annotated_frame)
-            if cv2.waitKey(1) & 0xFF == ord('q'):
-                break
+            # cv2.imshow("Annotated Frame", annotated_frame)
+            # if cv2.waitKey(1) & 0xFF == ord('q'):
+            #     break
 
             sink.write_frame(annotated_frame)
             frame_count += 1

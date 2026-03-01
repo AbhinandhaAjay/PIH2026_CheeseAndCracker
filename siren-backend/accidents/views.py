@@ -8,12 +8,15 @@ from .serializers import AccidentSerializer
 
 class AccidentCreateView(APIView):
     def post(self, request):
+        print(f"DEBUG: AccidentCreateView hit for address: {request.data.get('address')}")
         address = request.data.get('address')
         description = request.data.get('description', '')
         severity = request.data.get('severity', 'minor')
         severity_score = request.data.get('severity_score', 0)
         image = request.FILES.get('image')
+        print(f"DEBUG: Geocoding address...")
         coords = geocode_address(address)
+        print(f"DEBUG: Geocoding result: {coords}")
         if not coords:
             return Response({'error': 'Invalid accident address'}, status=400)
         

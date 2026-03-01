@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import './App.css';
 
 function App() {
-  const FLASK_API_URL = process.env.REACT_APP_FLASK_API_URL || 'http://localhost:5000';
+  const FLASK_API_URL = process.env.REACT_APP_FLASK_API_URL || 'http://localhost:5001';
   const [videoFile, setVideoFile] = useState(null);
   const [location, setLocation] = useState('');
   const [report, setReport] = useState('');
@@ -10,6 +10,8 @@ function App() {
   const [images, setImages] = useState([]);
   const [loading, setLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState('Detecting accidents...');
+  const [selectedPoints, setSelectedPoints] = useState([]);
+  const [showCoordinates, setShowCoordinates] = useState(false);
 
   useEffect(() => {
     let timers = [];
@@ -28,7 +30,26 @@ function App() {
     setReport('');
     setSummary('');
     setImages([]);
+    setSelectedPoints([]);
   };
+
+  const handlePointClick = (e) => {
+    if (selectedPoints.length >= 4) return;
+
+    const rect = e.target.getBoundingClientRect();
+    const x_px = e.clientX - rect.left;
+    const y_px = e.clientY - rect.top;
+
+    // Scale coordinates to original video resolution
+    // We'll calculate the actual scale on the backend, 
+    // but for the UI we send relative coordinates (0-1) or normalized
+    const x_norm = x_px / rect.width;
+    const y_norm = y_px / rect.height;
+
+    setSelectedPoints([...selectedPoints, { x: x_norm, y: y_norm }]);
+  };
+
+  const clearPoints = () => setSelectedPoints([]);
 
   const handleUpload = async () => {
     if (!videoFile || location.trim() === '') {
@@ -36,16 +57,24 @@ function App() {
       return;
     }
 
+    if (selectedPoints.length !== 4) {
+      alert("Please select exactly 4 points on the video to define the speed estimation zone.");
+      return;
+    }
+
     setLoading(true);
     const formData = new FormData();
     formData.append('video', videoFile);
     formData.append('location', location);
+    formData.append('coordinates', JSON.stringify(selectedPoints));
 
+    console.log("DEBUG: Starting upload to", `${FLASK_API_URL}/upload`);
     try {
       const res = await fetch(`${FLASK_API_URL}/upload`, {
         method: 'POST',
         body: formData,
       });
+      console.log("DEBUG: Fetch response received status:", res.status);
 
       const data = await res.json();
 
@@ -140,20 +169,71 @@ function App() {
                 </label>
               </div>
             </div>
-            {/* Video Preview */}
+            {/* Video Preview & Point Selection */}
             {videoFile && (
-              <div className="video-preview">
-                <video
-                  width="50%"
-                  height="auto"
-                  left="20mm"
-                  controls
-                  src={URL.createObjectURL(videoFile)}
-                  style={{ marginLeft: "70mm", borderRadius: "10px" }}
+              <div className="point-selection-container">
+                <div className="selection-instructions">
+                  <p>Click 4 points on the video to define the <strong>Speed Monitoring Zone</strong> ({selectedPoints.length}/4)</p>
+                  <button onClick={clearPoints} className="clear-points-btn">Reset Points</button>
+                </div>
 
-                >
-                  Your browser does not support the video tag.
-                </video>
+                <div className="video-canvas-wrapper" style={{ position: 'relative', display: 'inline-block' }}>
+                  <video
+                    id="preview-video"
+                    src={URL.createObjectURL(videoFile)}
+                    onClick={handlePointClick}
+                    style={{
+                      display: 'block',
+                      maxWidth: '100%',
+                      borderRadius: '8px',
+                      cursor: selectedPoints.length < 4 ? 'crosshair' : 'default'
+                    }}
+                  />
+
+                  {/* Overlay Points */}
+                  {selectedPoints.map((pt, i) => (
+                    <div
+                      key={i}
+                      className="selection-point"
+                      style={{
+                        position: 'absolute',
+                        left: `${pt.x * 100}%`,
+                        top: `${pt.y * 100}%`,
+                        width: '12px',
+                        height: '12px',
+                        backgroundColor: '#ff4b2b',
+                        border: '2px solid white',
+                        borderRadius: '50%',
+                        transform: 'translate(-50%, -50%)',
+                        pointerEvents: 'none',
+                        zIndex: 10
+                      }}
+                    />
+                  ))}
+
+                  {/* Draw edges between points if 4 are selected */}
+                  {selectedPoints.length === 4 && (
+                    <svg
+                      viewBox="0 0 100 100"
+                      preserveAspectRatio="none"
+                      style={{
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        width: '100%',
+                        height: '100%',
+                        pointerEvents: 'none'
+                      }}
+                    >
+                      <polygon
+                        points={selectedPoints.map(p => `${(p.x * 100).toFixed(2)},${(p.y * 100).toFixed(2)}`).join(' ')}
+                        fill="rgba(255, 75, 43, 0.2)"
+                        stroke="#ff4b2b"
+                        strokeWidth="2"
+                      />
+                    </svg>
+                  )}
+                </div>
               </div>
             )}
 
@@ -179,6 +259,23 @@ function App() {
                   <span>Analyze Video</span>
                 </>
               )}
+            </button>
+            <button
+              onClick={async () => {
+                console.log("DEBUG: Testing connection to", `${FLASK_API_URL}/`);
+                try {
+                  const res = await fetch(`${FLASK_API_URL}/`);
+                  const text = await res.text();
+                  alert("Connection Test: " + text);
+                } catch (e) {
+                  console.error("DEBUG: Connection failed", e);
+                  alert("Connection Failed: " + e.message);
+                }
+              }}
+              className="upload-button"
+              style={{ padding: '8px', background: '#4a5568', marginTop: '10px' }}
+            >
+              Test Backend Connection
             </button>
           </div>
         </section>

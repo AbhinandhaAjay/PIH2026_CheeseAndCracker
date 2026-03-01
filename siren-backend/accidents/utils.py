@@ -10,19 +10,20 @@ from .models import User  # your custom user model
 # Marina Beach, Zone 9 Teynampet,Chennai,Tamil Nadu,600001,India- this address works for testing
 def geocode_address(address):
     url = 'https://nominatim.openstreetmap.org/search'
-    params = {
-        'q': address,
-        'format': 'json',
-        'limit': 1
-    }
-    headers = {
-        'User-Agent': 'accident-management-app/1.0'
-    }
-    response = requests.get(url, params=params, headers=headers).json()
-    print(response)
-    if response:
-        return float(response[0]['lat']), float(response[0]['lon'])
-    return None
+    params = {'q': address, 'format': 'json', 'limit': 1}
+    headers = {'User-Agent': 'accident-management-app/1.0'}
+    
+    try:
+        response = requests.get(url, params=params, headers=headers)
+        response.raise_for_status()
+        data = response.json()
+        if data:
+            return float(data[0]['lat']), float(data[0]['lon'])
+    except Exception as e:
+        print(f"⚠️ Geocoding error: {e}")
+    
+    print("⚠️ Geocoding failed, using fallback coordinates (Chennai)")
+    return 13.0827, 80.2707  # Chennai coordinates
 
 
 
