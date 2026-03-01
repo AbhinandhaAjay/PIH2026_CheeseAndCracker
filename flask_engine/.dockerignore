@@ -1,0 +1,13 @@
+node_modules
+.venv
+__pycache__
+*.pyc
+.git
+.env
+uploads
+static/result_vdo
+accident_frames
+vdos
+models
+yolov8n.pt
+accident_detection_yolov8.pt

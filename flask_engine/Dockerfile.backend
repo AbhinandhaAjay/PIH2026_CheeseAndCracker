@@ -1,0 +1,23 @@
+# Flask Backend Dockerfile
+FROM python:3.11-bookworm
+
+# Install system dependencies for OpenCV and YOLO
+RUN apt-get update && apt-get install -y \
+    libgl1 \
+    libglib2.0-0 \
+    gcc \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+# Copy requirements and install
+COPY req.txt .
+RUN pip install --no-cache-dir -r req.txt
+RUN pip install --no-cache-dir python-dotenv
+
+# Copy project files
+COPY . .
+
+# Expose port and start
+EXPOSE 5000
+CMD ["python", "app.py"]

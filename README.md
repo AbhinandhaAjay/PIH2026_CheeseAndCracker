@@ -1,6 +1,7 @@
 # PIH2026_CheeseAndCracker
-Real-time Accident Detection and Emergency Response System
+## Siren: Real-time Accident Detection and Emergency Response System
 
+An accident detection system that uses computer vision to detect accidents from CCTV footage and notifies nearby hospitals and police stations.
 
 ## Features
 
