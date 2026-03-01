@@ -19,7 +19,7 @@ services:
       - key: DJANGO_DEBUG
         value: "False"
       - key: DJANGO_ALLOWED_HOSTS
-        fromContext: "RENDER_EXTERNAL_HOSTNAME"
+        value: "*"
       - key: GOOGLE_API_KEY
         sync: false # User must set this manually in Render dashboard
       - key: DJANGO_SECRET_KEY
