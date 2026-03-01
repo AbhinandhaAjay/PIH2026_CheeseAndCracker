@@ -1,0 +1,57 @@
+services:
+  # Django Components
+  django-backend:
+    build:
+      context: ./siren-backend
+      dockerfile: Dockerfile.backend
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./siren-backend:/app
+    environment:
+      - DEBUG=True
+      - GOOGLE_API_KEY_FILE=/app/.env
+    env_file:
+      - .env
+
+  django-frontend:
+    build:
+      context: ./siren-backend
+      dockerfile: Dockerfile.frontend
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./siren-backend:/app
+      - /app/node_modules
+    depends_on:
+      - django-backend
+
+  # Flask Components
+  flask-backend:
+    build:
+      context: ./flask_engine
+      dockerfile: Dockerfile.backend
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./flask_engine:/app
+    environment:
+      - DJANGO_API_URL=http://django-backend:8000
+    env_file:
+      - .env
+    depends_on:
+      - django-backend
+
+  flask-frontend:
+    build:
+      context: ./flask_engine/frontend
+      dockerfile: Dockerfile.frontend
+    ports:
+      - "3001:3000"
+    volumes:
+      - ./flask_engine/frontend:/app
+      - /app/node_modules
+    environment:
+      - REACT_APP_FLASK_API_URL=http://localhost:5000
+    depends_on:
+      - flask-backend

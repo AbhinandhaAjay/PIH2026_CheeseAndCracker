@@ -1,0 +1,56 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.pyd
+*.dll
+*.lib
+
+# Virtual Environments
+.venv/
+venv/
+ENV/
+env/
+
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+build/
+dist/
+
+# Environment Variables & Secrets
+.env
+.env.local
+.env.*.local
+*.pem
+*.key
+
+# Large Models and Weights (YOLO)
+*.pt
+*.onnx
+flask_engine/models/
+yolov8n.pt
+accident_detection_yolov8.pt
+
+# Media and Data
+vdos/
+uploads/
+*.mp4
+*.avi
+*.mov
+static/result_vdo/
+accident_frames/
+
+# System / IDE
+.vscode/
+.idea/
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+# Logs
+*.log
+logs/
