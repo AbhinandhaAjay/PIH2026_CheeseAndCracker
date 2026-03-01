@@ -728,3 +728,61 @@ body {
   from { opacity: 0; transform: scale(0.98); }
   to { opacity: 1; transform: scale(1); }
 }
+/* Point Selection UI */
+.point-selection-container {
+  margin-top: 1.5rem;
+  padding: 1.5rem;
+  background: #f8fafc;
+  border-radius: 12px;
+  border: 1px solid var(--border-color);
+  text-align: center;
+}
+
+.selection-instructions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.selection-instructions p {
+  font-size: 0.95rem;
+  color: var(--text-dark);
+}
+
+.selection-instructions strong {
+  color: #ff4b2b;
+}
+
+.clear-points-btn {
+  padding: 0.5rem 1rem;
+  background-color: #cbd5e0;
+  color: #2d3748;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.clear-points-btn:hover {
+  background-color: #a0aec0;
+}
+
+.video-canvas-wrapper {
+  box-shadow: var(--shadow-lg);
+  border-radius: 8px;
+  overflow: hidden;
+  max-width: 100%;
+}
+
+.selection-point {
+  box-shadow: 0 0 0 2px rgba(0,0,0,0.5);
+  animation: point-pop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes point-pop {
+  from { transform: translate(-50%, -50%) scale(0); }
+  to { transform: translate(-50%, -50%) scale(1); }
+}

@@ -5,6 +5,8 @@ from ultralytics import YOLO
 import supervision as sv
 from tqdm import tqdm
 import matplotlib.pyplot as plt
+import matplotlib
+matplotlib.use('Agg')
 from torchvision.ops import box_iou
 import torch
 import json
@@ -51,47 +53,36 @@ def send_to_django(address, description, severity, severity_score, image_path=No
 
 
 #ACCIDENT 
-def accident(video_path,address):
+def accident(video_path, address, coordinates=None):
     SOURCE_VIDEO_PATH = video_path
     TARGET_VIDEO_PATH = "static/result_vdo/vehicles-result-accident.mp4"
     CONFIDENCE_THRESHOLD = 0.5
     IOU_THRESHOLD = 0.5
+    print(f"DEBUG: Processing video {video_path} at {address}", flush=True)
     VEHICLE_MODEL_PATH = "yolov8n.pt"
     ACCIDENT_MODEL_PATH = "accident_detection_yolov8.pt"
     MODEL_RESOLUTION = 640
-
-    def select_polygon_points(image, num_points=4, x_margin=400, y_margin=300):
-        fig, ax = plt.subplots(figsize=(10, 6))
-        height, width = image.shape[:2]
-        ax.imshow(image, extent=[0, width, height, 0])
-        ax.set_xlim(-x_margin, width + x_margin)
-        ax.axhline(0, color='black', linewidth=1)
-        ax.axvline(0, color='black', linewidth=1)
-        ax.grid(True)
-        ax.set_title(f"Click {num_points} points for the SOURCE polygon")
-
-        coords = []
-        def onclick(event):
-            if event.xdata is not None and event.ydata is not None:
-                x, y = int(event.xdata), int(event.ydata)
-                coords.append((x, y))
-                ax.plot(x, y, 'ro')
-                ax.text(x + 5, y + 5, f"({x}, {y})", color='red')
-                fig.canvas.draw()
-                if len(coords) == num_points:
-                    plt.close()
-
-        fig.canvas.mpl_connect('button_press_event', onclick)
-        plt.show()
-        if len(coords) != num_points:
-            raise ValueError("Insufficient points selected.")
-        return np.array(coords, dtype=np.int32)
 
     # Polygon Zone
     frame_generator = sv.get_video_frames_generator(source_path=SOURCE_VIDEO_PATH)
     frame_iterator = iter(frame_generator)
     frame = next(frame_iterator)
-    SOURCE = select_polygon_points(frame.copy(), num_points=4)
+    height, width = frame.shape[:2]
+
+    if coordinates and len(coordinates) == 4:
+        # Scale normalized (0-1) coordinates from frontend back to pixel values
+        SOURCE = np.array([
+            [int(p['x'] * width), int(p['y'] * height)] 
+            for p in coordinates
+        ], dtype=np.int32)
+    else:
+        # Fallback to entire frame area
+        SOURCE = np.array([
+            [0, 0],
+            [width, 0],
+            [width, height],
+            [0, height]
+        ])
 
     #annotated_frame = frame.copy()
     #annotated_frame = sv.draw_polygon(scene=annotated_frame, polygon=SOURCE, color=sv.Color.RED, thickness=4)
@@ -101,8 +92,10 @@ def accident(video_path,address):
     accident_log = []
     acc_type =[]
     # --- Initialize ---
+    print("DEBUG: Loading YOLO models...", flush=True)
     vehicle_model = YOLO(VEHICLE_MODEL_PATH)
     accident_model = YOLO(ACCIDENT_MODEL_PATH)
+    print("DEBUG: Models loaded successfully.", flush=True)
     video_info = sv.VideoInfo.from_video_path(video_path=SOURCE_VIDEO_PATH)
     frame_generator = sv.get_video_frames_generator(source_path=SOURCE_VIDEO_PATH)
     byte_track = sv.ByteTrack(frame_rate=video_info.fps)
@@ -141,6 +134,8 @@ def accident(video_path,address):
     with sv.VideoSink(TARGET_VIDEO_PATH, video_info) as sink:
         frame_count = 0
         for frame in tqdm(frame_generator, total=video_info.total_frames):
+            if frame_count % 10 == 0:
+                print(f"DEBUG: Processing frame {frame_count}/{video_info.total_frames}...", flush=True)
             if frame_count > video_info.total_frames:
                 break
             try:
@@ -217,9 +212,9 @@ def accident(video_path,address):
                 annotated_frame = accident_label_annotator.annotate(annotated_frame, accident_detections, accident_labels)
 
                 # Display & Save
-                cv2.imshow("Annotated Frame", annotated_frame)
-                if cv2.waitKey(1) & 0xFF == ord('q'):
-                    break
+                # cv2.imshow("Annotated Frame", annotated_frame)
+                # if cv2.waitKey(1) & 0xFF == ord('q'):
+                #     break
 
                 sink.write_frame(annotated_frame)
                 frame_count += 1
@@ -232,7 +227,7 @@ def accident(video_path,address):
     else:
         class_name_id["type"] = 'NormalAccident'
 
-    cv2.destroyAllWindows()
+    # cv2.destroyAllWindows()
 
     #SPEED AND DISPLACEMENT
 
@@ -356,9 +351,9 @@ def accident(video_path,address):
                 annotated_frame = bounding_box_annotator.annotate(annotated_frame, detections)
                 annotated_frame = label_annotator.annotate(annotated_frame, detections, labels)
 
-                cv2.imshow("Annotated Frame", annotated_frame)
-                if cv2.waitKey(1) & 0xFF == ord('q'):
-                    break
+                # cv2.imshow("Annotated Frame", annotated_frame)
+                # if cv2.waitKey(1) & 0xFF == ord('q'):
+                #     break
 
                 sink.write_frame(annotated_frame)
                 frame_count += 1
@@ -411,7 +406,7 @@ def accident(video_path,address):
     if accident_labels['type'] == "SevereAccident":
         severity_score+=1
 
-    GOOGLE_API_KEY = 'AIzaSyCReasDzj5Ea_4KdLCveO_qu3RarMrGvjM'  # Replace with your actual API key
+    GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY", 'AIzaSyCReasDzj5Ea_4KdLCveO_qu3RarMrGvjM')
     genai.configure(api_key=GOOGLE_API_KEY)
     model = genai.GenerativeModel('gemini-2.0-flash')
 
@@ -478,7 +473,7 @@ def accident(video_path,address):
     return accident_report,response.text,images 
 
 
-    cv2.destroyAllWindows()
+    # cv2.destroyAllWindows()
 
 
 
